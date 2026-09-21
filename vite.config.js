@@ -5,19 +5,20 @@ import tailwindcss from "@tailwindcss/vite";
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react(), tailwindcss()],
-  
-  // Configuración para Vercel
-  base: '/',
-  
+
+  // Base relativa para compatibilidad con GitHub Pages y Vercel
+  base: './',
+
   server: {
     host: "0.0.0.0",
-    port: 3000,
-    strictPort: true,
+    port: 5173,
+    strictPort: false,
+    open: true,
     hmr: {
-      port: 3000,
+      port: 5173,
     },
   },
-  
+
   build: {
     outDir: 'dist',
     sourcemap: false,
@@ -25,12 +26,12 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
+          'vendor': ['react', 'react-dom', 'react-router-dom'],
           'charts': ['recharts'],
           'icons': ['lucide-react'],
         },
       },
     },
-    // Aumentar límite de warning de chunk size
     chunkSizeWarningLimit: 1000,
   },
 });
