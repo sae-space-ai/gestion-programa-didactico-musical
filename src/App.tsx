@@ -1,6 +1,7 @@
 // =====================================================
 // APP PRINCIPAL - Programa Didáctico 2026/2027
 // Estudios Profesionales de Música de Extremadura
+// Persistencia: IndexedDB (offline-first)
 // =====================================================
 
 import { useState, useEffect, useCallback } from 'react';
@@ -10,7 +11,7 @@ import {
   Home, BookOpen, Users, Music, Target, ClipboardCheck,
   UserCheck, BarChart3, GraduationCap, FileText, Users2,
   Settings, HelpCircle, Menu, X, Sun, Moon, Search,
-  Download, Upload, AlertTriangle
+  Download, Upload, AlertTriangle, Loader2
 } from 'lucide-react';
 import Dashboard from './modules/Dashboard';
 import Programme from './modules/Programme';
@@ -44,17 +45,31 @@ const modules = [
 ];
 
 function App() {
-  // Estado de la aplicación
-  const [state, setState] = useState<AppState>(loadState);
+  // Estado de la aplicación (carga asíncrona desde IndexedDB)
+  const [state, setState] = useState<AppState | null>(null);
   const [activeModule, setActiveModule] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [toast, setToast] = useState<{ message: string; type: string } | null>(null);
-  const [isDark, setIsDark] = useState(state.settings.theme === 'dark');
+  const [isDark, setIsDark] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Persistir estado en localStorage
+  // Cargar estado desde IndexedDB al montar
   useEffect(() => {
-    saveState(state);
+    const initApp = async () => {
+      const loadedState = await loadState();
+      setState(loadedState);
+      setIsDark(loadedState.settings.theme === 'dark');
+      setIsLoading(false);
+    };
+    initApp();
+  }, []);
+
+  // Persistir estado en IndexedDB cuando cambie
+  useEffect(() => {
+    if (state) {
+      saveState(state);
+    }
   }, [state]);
 
   // Aplicar tema oscuro
@@ -72,21 +87,29 @@ function App() {
     setTimeout(() => setToast(null), 3000);
   }, []);
 
-  // Actualizar estado
+  // Actualizar estado (merge parcial)
   const updateState = useCallback((updates: Partial<AppState>) => {
-    setState(prev => ({ ...prev, ...updates }));
+    setState((prev) => {
+      if (!prev) return prev;
+      return { ...prev, ...updates };
+    });
   }, []);
 
   // Toggle tema
   const toggleTheme = () => {
+    const newTheme = !isDark ? 'dark' : 'light';
     setIsDark(!isDark);
-    updateState({ settings: { ...state.settings, theme: isDark ? 'light' : 'dark' } });
+    if (state) {
+      updateState({ settings: { ...state.settings, theme: newTheme } });
+    }
   };
 
   // Exportar backup
   const handleExport = () => {
-    exportJSON(state);
-    showToast('Backup exportado correctamente');
+    if (state) {
+      exportJSON(state);
+      showToast('Backup exportado correctamente');
+    }
   };
 
   // Importar backup
@@ -104,12 +127,26 @@ function App() {
   };
 
   // Resetear datos
-  const handleReset = () => {
+  const handleReset = async () => {
     if (confirm('¿Estás seguro? Se perderán todos los datos actuales.')) {
-      setState(resetState());
+      const initial = await resetState();
+      setState(initial);
       showToast('Datos reseteados correctamente');
     }
   };
+
+  // Pantalla de carga
+  if (isLoading || !state) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[var(--bg-alt)]">
+        <div className="text-center">
+          <Loader2 size={48} className="animate-spin mx-auto mb-4 text-[var(--primary)]" />
+          <h2 className="text-xl font-bold text-[var(--primary)]">Cargando Programa Didáctico</h2>
+          <p className="text-sm text-[var(--text-light)] mt-2">Inicializando datos...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Renderizar módulo activo
   const renderModule = () => {
@@ -133,7 +170,7 @@ function App() {
   };
 
   // Contar alertas HOLD
-  const holdCount = state.holds.filter(h => !h.resolved).length;
+  const holdCount = state.holds.filter((h) => !h.resolved).length;
 
   return (
     <div className={`min-h-screen ${isDark ? 'dark' : ''}`}>
@@ -160,7 +197,7 @@ function App() {
         </div>
 
         <nav className="py-2">
-          {modules.map(mod => (
+          {modules.map((mod) => (
             <div
               key={mod.id}
               className={`sidebar-item ${activeModule === mod.id ? 'active' : ''}`}
@@ -170,7 +207,12 @@ function App() {
               }}
               role="button"
               tabIndex={0}
-              onKeyDown={(e) => { if (e.key === 'Enter') { setActiveModule(mod.id); setSidebarOpen(false); } }}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  setActiveModule(mod.id);
+                  setSidebarOpen(false);
+                }
+              }}
               aria-label={mod.label}
             >
               <mod.icon size={18} />

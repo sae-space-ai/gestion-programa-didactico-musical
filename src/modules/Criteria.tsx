@@ -10,7 +10,7 @@ import { Target, ChevronDown, ChevronUp } from 'lucide-react';
 
 interface Props { state: AppState; updateState: (u: Partial<AppState>) => void; showToast: (m: string, t?: string) => void; }
 
-export default function Criteria(_props: Props) {
+export default function Criteria({ state }: Props) {
   const [expandedCriterion, setExpandedCriterion] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'criteria' | 'rubrics' | 'tribunal'>('criteria');
 
