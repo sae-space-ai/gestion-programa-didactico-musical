@@ -4,6 +4,10 @@ Aplicación web **offline-first** para la gestión del **Programa Didáctico de 
 
 > 100% cliente · Sin backend · Persistencia local con IndexedDB
 
+[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/TU_USUARIO/gestion-programa-didactico-musical)
+[![Build Status](https://img.shields.io/badge/build-passing-brightgreen)]()
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+
 ---
 
 ## 📋 Descripción
@@ -63,7 +67,27 @@ Herramienta profesional para profesores y departamentos de conservatorios que pe
 
 ---
 
-## 🚀 Instalación
+## 🚀 Despliegue Rápido en Vercel
+
+### Opción 1: Un Clic (Recomendado)
+
+Haz clic en el botón **"Deploy with Vercel"** al inicio de este README.
+
+### Opción 2: Manual
+
+```bash
+# Clonar y desplegar
+git clone https://github.com/TU_USUARIO/gestion-programa-didactico-musical.git
+cd gestion-programa-didactico-musical
+npm install
+npx vercel --prod
+```
+
+📖 **Guía completa:** [VERCEL_DEPLOY.md](VERCEL_DEPLOY.md)
+
+---
+
+## 💻 Instalación Local
 
 ### Prerrequisitos
 
@@ -82,7 +106,7 @@ npm install
 
 # Ejecutar en desarrollo
 npm run dev
-# Abre http://localhost:5173
+# Abre http://localhost:3000
 
 # Compilar para producción
 npm run build
