@@ -1,5 +1,5 @@
 // =====================================================
-// APP PRINCIPAL - Layout con Menú Superior
+// APP PRINCIPAL - Layout con Sidebar Izquierdo
 // Programa Didáctico 2026/2027
 // =====================================================
 
@@ -7,7 +7,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { AppState } from './types';
 import { loadState, saveState, exportJSON, importJSON, resetState } from './store';
 import { Loader2 } from 'lucide-react';
-import TopNavigation from './components/TopNavigation';
+import Sidebar from './components/Sidebar';
+import TopBar from './components/TopBar';
 import Dashboard from './modules/Dashboard';
 import Programme from './modules/Programme';
 import Students from './modules/Students';
@@ -25,7 +26,7 @@ import Help from './modules/Help';
 function App() {
   const [state, setState] = useState<AppState | null>(null);
   const [activeModule, setActiveModule] = useState('dashboard');
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [toast, setToast] = useState<{ message: string; type: string } | null>(null);
   const [isDark, setIsDark] = useState(false);
@@ -58,16 +59,16 @@ function App() {
     }
   }, [isDark]);
 
-  // Cerrar menú móvil con ESC
+  // Cerrar sidebar con ESC
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && mobileMenuOpen) {
-        setMobileMenuOpen(false);
+      if (e.key === 'Escape' && sidebarOpen) {
+        setSidebarOpen(false);
       }
     };
     window.addEventListener('keydown', handleEsc);
     return () => window.removeEventListener('keydown', handleEsc);
-  }, [mobileMenuOpen]);
+  }, [sidebarOpen]);
 
   const showToast = useCallback((message: string, type: string = 'success') => {
     setToast({ message, type });
@@ -162,33 +163,43 @@ function App() {
 
   return (
     <div className={`app-container ${isDark ? 'dark' : ''}`}>
-      {/* Menú Superior */}
-      <TopNavigation
+      {/* Sidebar Izquierdo */}
+      <Sidebar
         activeModule={activeModule}
         setActiveModule={setActiveModule}
-        mobileMenuOpen={mobileMenuOpen}
-        setMobileMenuOpen={setMobileMenuOpen}
-        isDark={isDark}
-        toggleTheme={toggleTheme}
-        searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
         holdCount={holdCount}
-        onImport={handleImport}
         onExport={handleExport}
       />
 
-      {/* Backdrop para menú móvil */}
-      {mobileMenuOpen && (
+      {/* Backdrop para móvil */}
+      {sidebarOpen && (
         <div
-          className="mobile-menu-backdrop"
-          onClick={() => setMobileMenuOpen(false)}
+          className="sidebar-backdrop"
+          onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Contenido principal */}
-      <main className="main-content">
-        {renderModule()}
-      </main>
+      <div className="main-wrapper">
+        {/* TopBar */}
+        <TopBar
+          isDark={isDark}
+          toggleTheme={toggleTheme}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          holdCount={holdCount}
+          onImport={handleImport}
+        />
+
+        {/* Contenido del módulo */}
+        <main className="main-content">
+          {renderModule()}
+        </main>
+      </div>
 
       {/* Toast de notificación */}
       {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}

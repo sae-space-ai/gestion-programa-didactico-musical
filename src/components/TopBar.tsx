@@ -1,5 +1,5 @@
 // =====================================================
-// TOPBAR - Barra superior mejorada
+// TOPBAR - Barra superior
 // Programa Didáctico 2026/2027
 // =====================================================
 
@@ -29,61 +29,43 @@ export default function TopBar({
   return (
     <header className="topbar">
       {/* Sección izquierda */}
-      <div className="flex items-center gap-4">
+      <div className="topbar-left">
         {/* Botón hamburguesa (solo móvil) */}
         <button
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors lg:hidden"
+          className="hamburger-btn"
           aria-label="Abrir menú"
           aria-expanded={sidebarOpen}
         >
           <Menu size={24} />
         </button>
-
-        {/* Logo y título (visible en tablet y desktop) */}
-        <div className="hidden md:flex items-center gap-3">
-          <div className="w-10 h-10 rounded-lg gradient-accent flex items-center justify-center">
-            <span className="text-[var(--primary-dark)] font-bold text-lg">GP</span>
-          </div>
-          <div>
-            <h1 className="text-sm font-bold text-[var(--text)] leading-tight">
-              Gestión Programa Didáctico
-            </h1>
-            <p className="text-xs text-[var(--text-muted)]">
-              2026/2027 · Música · Extremadura
-            </p>
-          </div>
-        </div>
       </div>
 
       {/* Sección central - Búsqueda */}
-      <div className="flex-1 max-w-md mx-4 hidden sm:block">
-        <div className="relative">
-          <Search
-            size={18}
-            className="absolute left-3 top-1/2 -translate-y-1/2 text-[var(--text-muted)]"
-          />
+      <div className="topbar-center">
+        <div className="search-box">
+          <Search size={18} className="search-icon" />
           <input
             type="text"
             placeholder="Buscar en el programa..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2 rounded-lg border border-[var(--border)] text-sm focus:outline-none focus:border-[var(--primary)] focus:ring-2 focus:ring-[var(--primary)]/20 bg-[var(--bg)] transition-all"
+            className="search-input"
             aria-label="Búsqueda global"
           />
         </div>
       </div>
 
       {/* Sección derecha */}
-      <div className="flex items-center gap-2">
+      <div className="topbar-right">
         {/* Badge HOLD */}
         {holdCount > 0 && (
           <button
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 text-xs font-semibold hover:bg-red-100 dark:hover:bg-red-900/30 transition-colors"
+            className="hold-badge"
             aria-label={`${holdCount} elementos HOLD pendientes`}
             title="Elementos de verificación pendientes"
           >
-            <AlertTriangle size={14} className="animate-pulse" />
+            <AlertTriangle size={14} />
             <span>{holdCount} HOLD</span>
           </button>
         )}
@@ -91,7 +73,7 @@ export default function TopBar({
         {/* Toggle tema */}
         <button
           onClick={toggleTheme}
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          className="icon-btn"
           aria-label={isDark ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro'}
           title={isDark ? 'Tema claro' : 'Tema oscuro'}
         >
@@ -100,7 +82,7 @@ export default function TopBar({
 
         {/* Importar backup */}
         <label
-          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors cursor-pointer"
+          className="icon-btn"
           title="Importar backup JSON"
           aria-label="Importar backup"
         >
@@ -108,9 +90,9 @@ export default function TopBar({
           <input type="file" accept=".json" onChange={onImport} className="hidden" />
         </label>
 
-        {/* Avatar usuario (placeholder) */}
+        {/* Avatar usuario */}
         <div
-          className="w-9 h-9 rounded-full bg-gradient-to-br from-[var(--primary)] to-[var(--primary-light)] flex items-center justify-center text-white font-semibold text-sm cursor-pointer hover:shadow-md transition-shadow"
+          className="user-avatar"
           title="Perfil de usuario"
           aria-label="Perfil de usuario"
         >
