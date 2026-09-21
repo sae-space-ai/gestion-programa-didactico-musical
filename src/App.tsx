@@ -11,6 +11,7 @@ import Sidebar from './components/Sidebar';
 import TopBar from './components/TopBar';
 import Dashboard from './modules/Dashboard';
 import Programme from './modules/Programme';
+import BloquesPage from './bloques/BloquesPage';
 import Students from './modules/Students';
 import Ensembles from './modules/Ensembles';
 import Criteria from './modules/Criteria';
@@ -137,6 +138,7 @@ function App() {
     switch (activeModule) {
       case 'dashboard': return <Dashboard {...props} />;
       case 'programme': return <Programme {...props} />;
+      case 'bloques': return <BloquesPage />;
       case 'students': return <Students {...props} />;
       case 'ensembles': return <Ensembles {...props} />;
       case 'criteria': return <Criteria {...props} />;

@@ -21,6 +21,7 @@ interface SidebarProps {
 const modules = [
   { id: 'dashboard', label: 'Inicio', icon: Home, badge: true },
   { id: 'programme', label: 'Programación Didáctica', icon: BookOpen },
+  { id: 'bloques', label: 'Bloques de Contenido', icon: BookOpen },
   { id: 'students', label: 'Alumnado', icon: Users },
   { id: 'ensembles', label: 'Agrupaciones', icon: Music },
   { id: 'criteria', label: 'Criterios y Rúbricas', icon: Target },

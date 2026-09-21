@@ -260,6 +260,50 @@ export interface Competence {
 }
 
 // =====================================================
+// TIPOS PARA BLOQUES DE CONTENIDO (Módulo Bloques)
+// =====================================================
+
+// BLOQUE BASE
+export interface Bloque {
+  id: string;
+  code: string;
+  title: string;
+  description: string;
+  subject?: 'Camara' | 'Banda' | 'Orquesta' | 'All';
+  course?: number | 'All';
+  relatedObjectives?: string[];
+  relatedCriteria?: string[];
+  relatedCompetences?: string[];
+  relatedContents?: string[];
+}
+
+// OBJETIVO
+export interface Objetivo extends Bloque {
+  type: 'general' | 'camara' | 'banda' | 'orquesta';
+}
+
+// CONTENIDO
+export interface Contenido extends Bloque {
+  subcontents: string[];
+}
+
+// COMPETENCIA (para Bloques)
+export interface CompetenciaBloque extends Bloque {
+  family: 'musical' | 'interpretativa' | 'personal' | 'autonomia' | 'digital';
+  manifestations: string[];
+  units: string[];
+  evidence: string[];
+  instruments: string[];
+}
+
+// FILTROS DE BLOQUES
+export interface BloquesFilters {
+  subject: 'All' | 'Camara' | 'Banda' | 'Orquesta';
+  course: 'All' | 1 | 2 | 3 | 4 | 5 | 6;
+  search: string;
+}
+
+// =====================================================
 // TIPOS PARA CATÁLOGO DE RÚBRICAS (Anexo)
 // =====================================================
 
