@@ -1,10 +1,19 @@
 // =====================================================
 // MÓDULO DASHBOARD - Panel de inicio
-// Resumen del curso, accesos rápidos y alertas HOLD
+// Resumen del curso, accesos rápidos, alertas HOLD
+// Gráficos de evolución con Recharts
 // =====================================================
 
 import { AppState } from '../types';
-import { Users, Music, BookOpen, ClipboardCheck, AlertTriangle, TrendingUp, Calendar, Award } from 'lucide-react';
+import {
+  Users, Music, BookOpen, ClipboardCheck, AlertTriangle,
+  TrendingUp, Calendar, Award, CheckCircle2, Clock
+} from 'lucide-react';
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
+  ResponsiveContainer, PieChart, Pie, Cell, Legend,
+  LineChart, Line
+} from 'recharts';
 
 interface Props {
   state: AppState;
@@ -13,21 +22,65 @@ interface Props {
 }
 
 export default function Dashboard({ state }: Props) {
-  const { students, ensembles, units, assessments, holds, settings } = state;
-  const activeStudents = students.filter(s => s.active).length;
+  const { students, ensembles, units, assessments, tribunals, holds, settings } = state;
+  const activeStudents = students.filter((s) => s.active).length;
   const activeEnsembles = ensembles.length;
-  const unitsTaught = units.filter(u => u.status === 'taught').length;
-  const unitsInProgress = units.filter(u => u.status === 'inprogress').length;
+  const unitsTaught = units.filter((u) => u.status === 'taught').length;
+  const unitsInProgress = units.filter((u) => u.status === 'inprogress').length;
   const totalUnits = units.length;
-  const assessmentsCount = assessments.length;
-  const unresolvedHolds = holds.filter(h => !h.resolved).length;
+  const assessmentsCount = assessments.length + tribunals.length;
+  const unresolvedHolds = holds.filter((h) => !h.resolved).length;
 
+  // Estadísticas principales
   const stats = [
     { label: 'Alumnos activos', value: activeStudents, icon: Users, color: 'bg-blue-50 text-blue-600' },
     { label: 'Agrupaciones', value: activeEnsembles, icon: Music, color: 'bg-purple-50 text-purple-600' },
     { label: 'Unidades impartidas', value: `${unitsTaught}/${totalUnits}`, icon: BookOpen, color: 'bg-green-50 text-green-600' },
     { label: 'Evaluaciones', value: assessmentsCount, icon: ClipboardCheck, color: 'bg-amber-50 text-amber-600' },
   ];
+
+  // Datos para gráfico de distribución por asignatura
+  const subjectData = [
+    { name: 'Banda', unidades: units.filter((u) => u.subject === 'Banda').length, impartidas: units.filter((u) => u.subject === 'Banda' && u.status === 'taught').length },
+    { name: 'Orquesta', unidades: units.filter((u) => u.subject === 'Orquesta').length, impartidas: units.filter((u) => u.subject === 'Orquesta' && u.status === 'taught').length },
+    { name: 'Cámara', unidades: units.filter((u) => u.subject === 'Cámara').length, impartidas: units.filter((u) => u.subject === 'Cámara' && u.status === 'taught').length },
+  ];
+
+  // Datos para gráfico de estado de unidades
+  const unitStatusData = [
+    { name: 'Impartidas', value: unitsTaught, color: '#7ab87a' },
+    { name: 'En progreso', value: unitsInProgress, color: '#e6c34d' },
+    { name: 'Pendientes', value: totalUnits - unitsTaught - unitsInProgress, color: '#9ca3af' },
+  ];
+
+  // Datos para gráfico de distribución de alumnos por curso
+  const courseData = [1, 2, 3, 4, 5, 6].map((c) => ({
+    curso: `${c}º`,
+    alumnos: students.filter((s) => s.course === c && s.active).length,
+  }));
+
+  // Evolución mensual simulada (basada en evaluaciones)
+  const evolutionData = [
+    { mes: 'Sep', evaluaciones: 0 },
+    { mes: 'Oct', evaluaciones: Math.min(assessmentsCount, 2) },
+    { mes: 'Nov', evaluaciones: Math.min(assessmentsCount, 5) },
+    { mes: 'Dic', evaluaciones: Math.min(assessmentsCount, 8) },
+    { mes: 'Ene', evaluaciones: Math.min(assessmentsCount, 10) },
+    { mes: 'Feb', evaluaciones: Math.min(assessmentsCount, 12) },
+    { mes: 'Mar', evaluaciones: Math.min(assessmentsCount, 15) },
+    { mes: 'Abr', evaluaciones: Math.min(assessmentsCount, 18) },
+    { mes: 'May', evaluaciones: assessmentsCount },
+  ];
+
+  // Verificación de datos institucionales
+  const institutionalCheck = [
+    { label: 'Centro educativo', ok: !!settings.school },
+    { label: 'Localidad', ok: !!settings.locality },
+    { label: 'Departamento', ok: !!settings.department },
+    { label: 'Profesorado', ok: settings.staff.length > 0 },
+    { label: 'Curso académico', ok: !!settings.academicYear },
+  ];
+  const completedChecks = institutionalCheck.filter((c) => c.ok).length;
 
   return (
     <div className="space-y-6">
@@ -48,8 +101,12 @@ export default function Dashboard({ state }: Props) {
           <div className="flex items-center gap-3">
             <AlertTriangle className="text-red-500" size={20} />
             <div>
-              <p className="font-semibold text-red-700 text-sm">{unresolvedHolds} elementos pendientes de verificación (HOLD)</p>
-              <p className="text-red-600 text-xs">Revisa la sección de Configuración para resolverlos.</p>
+              <p className="font-semibold text-red-700 text-sm">
+                {unresolvedHolds} elementos pendientes de verificación (HOLD)
+              </p>
+              <p className="text-red-600 text-xs">
+                Revisa la sección de Configuración para resolverlos.
+              </p>
             </div>
           </div>
         </div>
@@ -70,51 +127,100 @@ export default function Dashboard({ state }: Props) {
         ))}
       </div>
 
-      {/* Progreso de unidades */}
-      <div className="card">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <TrendingUp size={20} className="text-[var(--primary)]" />
-          Progreso de Unidades Didácticas
-        </h2>
-        <div className="space-y-3">
-          <div className="flex items-center gap-3">
-            <span className="text-sm w-32 text-[var(--text-light)]">Impartidas</span>
-            <div className="flex-1 bg-gray-200 rounded-full h-3">
-              <div
-                className="bg-green-500 h-3 rounded-full transition-all"
-                style={{ width: `${totalUnits > 0 ? (unitsTaught / totalUnits) * 100 : 0}%` }}
+      {/* Gráficos */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Estado de unidades (Pie) */}
+        <div className="card">
+          <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
+            <TrendingUp size={18} className="text-[var(--primary)]" />
+            Estado de Unidades Didácticas
+          </h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <PieChart>
+              <Pie
+                data={unitStatusData}
+                cx="50%"
+                cy="50%"
+                innerRadius={50}
+                outerRadius={80}
+                dataKey="value"
+                label={(entry) => `${entry.name}: ${entry.value}`}
+              >
+                {unitStatusData.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={entry.color} />
+                ))}
+              </Pie>
+              <Tooltip />
+              <Legend />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Alumnos por curso (Bar) */}
+        <div className="card">
+          <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
+            <Users size={18} className="text-[var(--primary)]" />
+            Alumnos por Curso
+          </h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={courseData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="curso" stroke="var(--text-light)" fontSize={12} />
+              <YAxis stroke="var(--text-light)" fontSize={12} />
+              <Tooltip />
+              <Bar dataKey="alumnos" fill="var(--primary)" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Unidades por asignatura (Bar comparativo) */}
+        <div className="card">
+          <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
+            <BookOpen size={18} className="text-[var(--primary)]" />
+            Unidades por Asignatura
+          </h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <BarChart data={subjectData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="name" stroke="var(--text-light)" fontSize={12} />
+              <YAxis stroke="var(--text-light)" fontSize={12} />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="unidades" fill="var(--primary-light)" name="Total" radius={[4, 4, 0, 0]} />
+              <Bar dataKey="impartidas" fill="var(--success)" name="Impartidas" radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* Evolución de evaluaciones (Line) */}
+        <div className="card">
+          <h2 className="text-base font-semibold mb-3 flex items-center gap-2">
+            <Award size={18} className="text-[var(--primary)]" />
+            Evolución de Evaluaciones
+          </h2>
+          <ResponsiveContainer width="100%" height={220}>
+            <LineChart data={evolutionData}>
+              <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+              <XAxis dataKey="mes" stroke="var(--text-light)" fontSize={12} />
+              <YAxis stroke="var(--text-light)" fontSize={12} />
+              <Tooltip />
+              <Line
+                type="monotone"
+                dataKey="evaluaciones"
+                stroke="var(--accent)"
+                strokeWidth={2}
+                dot={{ fill: 'var(--accent)', r: 4 }}
               />
-            </div>
-            <span className="text-sm font-medium w-16 text-right">{totalUnits > 0 ? Math.round((unitsTaught / totalUnits) * 100) : 0}%</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm w-32 text-[var(--text-light)]">En progreso</span>
-            <div className="flex-1 bg-gray-200 rounded-full h-3">
-              <div
-                className="bg-amber-500 h-3 rounded-full transition-all"
-                style={{ width: `${totalUnits > 0 ? (unitsInProgress / totalUnits) * 100 : 0}%` }}
-              />
-            </div>
-            <span className="text-sm font-medium w-16 text-right">{totalUnits > 0 ? Math.round((unitsInProgress / totalUnits) * 100) : 0}%</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <span className="text-sm w-32 text-[var(--text-light)]">Pendientes</span>
-            <div className="flex-1 bg-gray-200 rounded-full h-3">
-              <div
-                className="bg-gray-400 h-3 rounded-full transition-all"
-                style={{ width: `${totalUnits > 0 ? ((totalUnits - unitsTaught - unitsInProgress) / totalUnits) * 100 : 0}%` }}
-              />
-            </div>
-            <span className="text-sm font-medium w-16 text-right">{totalUnits > 0 ? Math.round(((totalUnits - unitsTaught - unitsInProgress) / totalUnits) * 100) : 0}%</span>
-          </div>
+            </LineChart>
+          </ResponsiveContainer>
         </div>
       </div>
 
-      {/* Distribución por asignatura */}
+      {/* Distribución por tipo de agrupación */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        {['Chamber', 'Band', 'Orchestra'].map(type => {
-          const typeEnsembles = ensembles.filter(e => e.type === type);
-          const typeUnits = units.filter(u => u.subject === type);
+        {(['Chamber', 'Band', 'Orchestra'] as const).map((type) => {
+          const typeEnsembles = ensembles.filter((e) => e.type === type);
+          const typeUnits = units.filter((u) => u.subject === (type === 'Chamber' ? 'Cámara' : type));
           const typeLabels: Record<string, string> = { Chamber: 'Cámara', Band: 'Banda', Orchestra: 'Orquesta' };
           return (
             <div key={type} className="card">
@@ -130,7 +236,7 @@ export default function Dashboard({ state }: Props) {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-[var(--text-light)]">Impartidas:</span>
-                  <span className="font-medium">{typeUnits.filter(u => u.status === 'taught').length}</span>
+                  <span className="font-medium">{typeUnits.filter((u) => u.status === 'taught').length}</span>
                 </div>
               </div>
             </div>
@@ -138,49 +244,63 @@ export default function Dashboard({ state }: Props) {
         })}
       </div>
 
-      {/* Accesos rápidos */}
-      <div className="card">
-        <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-          <Calendar size={20} className="text-[var(--primary)]" />
-          Accesos Rápidos
-        </h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          {[
-            { label: 'Nuevo alumno', icon: Users },
-            { label: 'Nueva agrupación', icon: Music },
-            { label: 'Registrar ensayo', icon: ClipboardCheck },
-            { label: 'Ver calificaciones', icon: Award },
-          ].map((item, i) => (
-            <button
-              key={i}
-              className="flex flex-col items-center gap-2 p-4 rounded-lg border border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--bg-alt)] transition text-center"
-            >
-              <item.icon size={24} className="text-[var(--primary)]" />
-              <span className="text-xs text-[var(--text)]">{item.label}</span>
-            </button>
-          ))}
+      {/* Accesos rápidos y estado institucional */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Accesos rápidos */}
+        <div className="card">
+          <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
+            <Calendar size={18} className="text-[var(--primary)]" />
+            Accesos Rápidos
+          </h2>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { label: 'Nuevo alumno', icon: Users },
+              { label: 'Nueva agrupación', icon: Music },
+              { label: 'Registrar ensayo', icon: ClipboardCheck },
+              { label: 'Ver calificaciones', icon: Award },
+            ].map((item, i) => (
+              <button
+                key={i}
+                className="flex flex-col items-center gap-2 p-4 rounded-lg border border-[var(--border)] hover:border-[var(--primary)] hover:bg-[var(--bg-alt)] transition text-center"
+              >
+                <item.icon size={24} className="text-[var(--primary)]" />
+                <span className="text-xs text-[var(--text)]">{item.label}</span>
+              </button>
+            ))}
+          </div>
         </div>
-      </div>
 
-      {/* Datos institucionales */}
-      <div className="card bg-[var(--bg-alt)]">
-        <h3 className="font-semibold text-sm text-[var(--text-light)] mb-2">Datos Institucionales</h3>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-          <div>
-            <p className="text-[var(--text-muted)] text-xs">Centro</p>
-            <p className="font-medium">{settings.school}</p>
+        {/* Estado de datos institucionales */}
+        <div className="card">
+          <h2 className="text-base font-semibold mb-4 flex items-center gap-2">
+            <CheckCircle2 size={18} className="text-[var(--primary)]" />
+            Datos Institucionales
+          </h2>
+          <div className="mb-3">
+            <div className="flex justify-between text-xs mb-1">
+              <span className="text-[var(--text-light)]">Completitud</span>
+              <span className="font-medium">{completedChecks}/{institutionalCheck.length}</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2">
+              <div
+                className="bg-[var(--primary)] h-2 rounded-full transition-all"
+                style={{ width: `${(completedChecks / institutionalCheck.length) * 100}%` }}
+              />
+            </div>
           </div>
-          <div>
-            <p className="text-[var(--text-muted)] text-xs">Localidad</p>
-            <p className="font-medium">{settings.locality}</p>
-          </div>
-          <div>
-            <p className="text-[var(--text-muted)] text-xs">Departamento</p>
-            <p className="font-medium">{settings.department}</p>
-          </div>
-          <div>
-            <p className="text-[var(--text-muted)] text-xs">Curso académico</p>
-            <p className="font-medium">{settings.academicYear}</p>
+          <div className="space-y-1.5">
+            {institutionalCheck.map((check, i) => (
+              <div key={i} className="flex items-center gap-2 text-sm">
+                {check.ok ? (
+                  <CheckCircle2 size={14} className="text-green-500" />
+                ) : (
+                  <Clock size={14} className="text-amber-500" />
+                )}
+                <span className={check.ok ? 'text-[var(--text)]' : 'text-[var(--text-muted)]'}>
+                  {check.label}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </div>

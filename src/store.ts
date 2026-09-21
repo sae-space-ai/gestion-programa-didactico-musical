@@ -5,96 +5,39 @@
 // =====================================================
 
 import { AppState } from './types';
-import { seedInitialState } from './data/seed';
+import {
+  seedDatabase,
+  loadFromDB,
+  saveToDB,
+  clearDatabase,
+  resetToSeed,
+  getStorageInfo,
+  isIndexedDBAvailable,
+} from './db/seed';
 
-const DB_NAME = 'programa_didactico_2026_2027';
-const DB_VERSION = 1;
-const STORE_NAME = 'app_state';
-const STATE_KEY = 'main_state';
-
-// =====================================================
-// INICIALIZACIÓN DE INDEXEDDB
-// =====================================================
-const openDB = (): Promise<IDBDatabase> => {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open(DB_NAME, DB_VERSION);
-
-    request.onerror = () => {
-      console.error('Error abriendo IndexedDB');
-      reject(request.error);
-    };
-
-    request.onsuccess = () => {
-      resolve(request.result);
-    };
-
-    request.onupgradeneeded = (event) => {
-      const db = (event.target as IDBOpenDBRequest).result;
-      if (!db.objectStoreNames.contains(STORE_NAME)) {
-        db.createObjectStore(STORE_NAME, { keyPath: 'id' });
-      }
-    };
-  });
+// Re-exportar funciones de db/seed para uso externo
+export {
+  seedDatabase,
+  loadFromDB,
+  saveToDB,
+  clearDatabase,
+  resetToSeed,
+  getStorageInfo,
+  isIndexedDBAvailable,
 };
 
 // =====================================================
-// CARGAR ESTADO DESDE INDEXEDDB
+// CARGAR ESTADO (usando seedDatabase si es primera vez)
 // =====================================================
 export const loadState = async (): Promise<AppState> => {
-  try {
-    const db = await openDB();
-    return new Promise((resolve) => {
-      const transaction = db.transaction(STORE_NAME, 'readonly');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.get(STATE_KEY);
-
-      request.onsuccess = () => {
-        db.close();
-        if (request.result && request.result.data) {
-          resolve(request.result.data as AppState);
-        } else {
-          // Primera ejecución: cargar datos semilla
-          resolve(seedInitialState as AppState);
-        }
-      };
-
-      request.onerror = () => {
-        db.close();
-        console.error('Error cargando estado desde IndexedDB');
-        resolve(seedInitialState as AppState);
-      };
-    });
-  } catch (error) {
-    console.error('Error en loadState:', error);
-    return seedInitialState as AppState;
-  }
+  return await seedDatabase();
 };
 
 // =====================================================
 // GUARDAR ESTADO EN INDEXEDDB
 // =====================================================
 export const saveState = async (state: AppState): Promise<void> => {
-  try {
-    const db = await openDB();
-    return new Promise((resolve, reject) => {
-      const transaction = db.transaction(STORE_NAME, 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.put({ id: STATE_KEY, data: state, timestamp: Date.now() });
-
-      request.onsuccess = () => {
-        db.close();
-        resolve();
-      };
-
-      request.onerror = () => {
-        db.close();
-        console.error('Error guardando estado en IndexedDB');
-        reject(request.error);
-      };
-    });
-  } catch (error) {
-    console.error('Error en saveState:', error);
-  }
+  await saveToDB(state);
 };
 
 // =====================================================
@@ -135,78 +78,36 @@ export const importJSON = (file: File): Promise<AppState> => {
 // RESETEAR ESTADO A VALORES INICIALES
 // =====================================================
 export const resetState = async (): Promise<AppState> => {
-  const initial = seedInitialState as AppState;
-  await saveState(initial);
-  return initial;
+  return await resetToSeed();
 };
 
 // =====================================================
-// LIMPIAR INDEXEDDB COMPLETAMENTE
+// EXPORTAR CSV
 // =====================================================
-export const clearDatabase = async (): Promise<void> => {
-  try {
-    const db = await openDB();
-    return new Promise((resolve) => {
-      const transaction = db.transaction(STORE_NAME, 'readwrite');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.clear();
+export const exportCSV = (data: Record<string, unknown>[], filename: string): void => {
+  if (data.length === 0) return;
 
-      request.onsuccess = () => {
-        db.close();
-        resolve();
-      };
+  const headers = Object.keys(data[0]);
+  const csvContent = [
+    headers.join(';'),
+    ...data.map((row) =>
+      headers
+        .map((h) => {
+          const val = row[h];
+          const str = typeof val === 'object' ? JSON.stringify(val) : String(val ?? '');
+          return `"${str.replace(/"/g, '""')}"`;
+        })
+        .join(';')
+    ),
+  ].join('\n');
 
-      request.onerror = () => {
-        db.close();
-        resolve();
-      };
-    });
-  } catch (error) {
-    console.error('Error limpiando IndexedDB:', error);
-  }
-};
-
-// =====================================================
-// VERIFICAR DISPONIBILIDAD DE INDEXEDDB
-// =====================================================
-export const isIndexedDBAvailable = (): boolean => {
-  try {
-    return typeof indexedDB !== 'undefined' && indexedDB !== null;
-  } catch {
-    return false;
-  }
-};
-
-// =====================================================
-// OBTENER INFORMACIÓN DE ALMACENAMIENTO
-// =====================================================
-export const getStorageInfo = async (): Promise<{ used: number; timestamp: number | null }> => {
-  try {
-    const db = await openDB();
-    return new Promise((resolve) => {
-      const transaction = db.transaction(STORE_NAME, 'readonly');
-      const store = transaction.objectStore(STORE_NAME);
-      const request = store.get(STATE_KEY);
-
-      request.onsuccess = () => {
-        db.close();
-        if (request.result) {
-          const data = JSON.stringify(request.result.data);
-          resolve({
-            used: new Blob([data]).size,
-            timestamp: request.result.timestamp || null,
-          });
-        } else {
-          resolve({ used: 0, timestamp: null });
-        }
-      };
-
-      request.onerror = () => {
-        db.close();
-        resolve({ used: 0, timestamp: null });
-      };
-    });
-  } catch {
-    return { used: 0, timestamp: null };
-  }
+  const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${filename}_${new Date().toISOString().split('T')[0]}.csv`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 };

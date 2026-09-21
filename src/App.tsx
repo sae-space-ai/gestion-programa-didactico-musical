@@ -7,12 +7,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { AppState } from './types';
 import { loadState, saveState, exportJSON, importJSON, resetState } from './store';
-import {
-  Home, BookOpen, Users, Music, Target, ClipboardCheck,
-  UserCheck, BarChart3, GraduationCap, FileText, Users2,
-  Settings, HelpCircle, Menu, X, Sun, Moon, Search,
-  Download, Upload, AlertTriangle, Loader2
-} from 'lucide-react';
+import { Loader2 } from 'lucide-react';
+import Sidebar from './components/Sidebar';
+import TopBar from './components/TopBar';
 import Dashboard from './modules/Dashboard';
 import Programme from './modules/Programme';
 import Students from './modules/Students';
@@ -27,23 +24,6 @@ import Coordination from './modules/Coordination';
 import SettingsModule from './modules/Settings';
 import Help from './modules/Help';
 
-// Módulos de navegación
-const modules = [
-  { id: 'dashboard', label: 'Inicio', icon: Home },
-  { id: 'programme', label: 'Programación Didáctica', icon: BookOpen },
-  { id: 'students', label: 'Alumnado', icon: Users },
-  { id: 'ensembles', label: 'Agrupaciones', icon: Music },
-  { id: 'criteria', label: 'Criterios y Rúbricas', icon: Target },
-  { id: 'assessment', label: 'Evaluación', icon: ClipboardCheck },
-  { id: 'coassessment', label: 'Auto/Co-evaluación', icon: UserCheck },
-  { id: 'grades', label: 'Calificaciones', icon: BarChart3 },
-  { id: 'units', label: 'Unidades Didácticas', icon: GraduationCap },
-  { id: 'annexes', label: 'Anexos y Plantillas', icon: FileText },
-  { id: 'coordination', label: 'Coordinación', icon: Users2 },
-  { id: 'settings', label: 'Configuración', icon: Settings },
-  { id: 'help', label: 'Ayuda', icon: HelpCircle },
-];
-
 function App() {
   // Estado de la aplicación (carga asíncrona desde IndexedDB)
   const [state, setState] = useState<AppState | null>(null);
@@ -54,7 +34,7 @@ function App() {
   const [isDark, setIsDark] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Cargar estado desde IndexedDB al montar
+  // Cargar estado desde IndexedDB al montar (con datos semilla si es primera vez)
   useEffect(() => {
     const initApp = async () => {
       const loadedState = await loadState();
@@ -72,7 +52,7 @@ function App() {
     }
   }, [state]);
 
-  // Aplicar tema oscuro
+  // Aplicar tema oscuro al documento
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark');
@@ -95,7 +75,7 @@ function App() {
     });
   }, []);
 
-  // Toggle tema
+  // Toggle tema claro/oscuro
   const toggleTheme = () => {
     const newTheme = !isDark ? 'dark' : 'light';
     setIsDark(!isDark);
@@ -104,7 +84,7 @@ function App() {
     }
   };
 
-  // Exportar backup
+  // Exportar backup JSON
   const handleExport = () => {
     if (state) {
       exportJSON(state);
@@ -112,7 +92,7 @@ function App() {
     }
   };
 
-  // Importar backup
+  // Importar backup JSON
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -126,7 +106,7 @@ function App() {
     e.target.value = '';
   };
 
-  // Resetear datos
+  // Resetear datos a valores iniciales
   const handleReset = async () => {
     if (confirm('¿Estás seguro? Se perderán todos los datos actuales.')) {
       const initial = await resetState();
@@ -135,14 +115,14 @@ function App() {
     }
   };
 
-  // Pantalla de carga
+  // Pantalla de carga mientras se inicializa IndexedDB
   if (isLoading || !state) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--bg-alt)]">
         <div className="text-center">
           <Loader2 size={48} className="animate-spin mx-auto mb-4 text-[var(--primary)]" />
           <h2 className="text-xl font-bold text-[var(--primary)]">Cargando Programa Didáctico</h2>
-          <p className="text-sm text-[var(--text-light)] mt-2">Inicializando datos...</p>
+          <p className="text-sm text-[var(--text-light)] mt-2">Inicializando base de datos...</p>
         </div>
       </div>
     );
@@ -152,148 +132,79 @@ function App() {
   const renderModule = () => {
     const props = { state, updateState, showToast };
     switch (activeModule) {
-      case 'dashboard': return <Dashboard {...props} />;
-      case 'programme': return <Programme {...props} />;
-      case 'students': return <Students {...props} />;
-      case 'ensembles': return <Ensembles {...props} />;
-      case 'criteria': return <Criteria {...props} />;
-      case 'assessment': return <Assessment {...props} />;
-      case 'coassessment': return <CoAssessment {...props} />;
-      case 'grades': return <Grades {...props} />;
-      case 'units': return <Units {...props} />;
-      case 'annexes': return <Annexes {...props} />;
-      case 'coordination': return <Coordination {...props} />;
-      case 'settings': return <SettingsModule {...props} onExport={handleExport} onImport={handleImport} onReset={handleReset} />;
-      case 'help': return <Help />;
-      default: return <Dashboard {...props} />;
+      case 'dashboard':
+        return <Dashboard {...props} />;
+      case 'programme':
+        return <Programme {...props} />;
+      case 'students':
+        return <Students {...props} />;
+      case 'ensembles':
+        return <Ensembles {...props} />;
+      case 'criteria':
+        return <Criteria {...props} />;
+      case 'assessment':
+        return <Assessment {...props} />;
+      case 'coassessment':
+        return <CoAssessment {...props} />;
+      case 'grades':
+        return <Grades {...props} />;
+      case 'units':
+        return <Units {...props} />;
+      case 'annexes':
+        return <Annexes {...props} />;
+      case 'coordination':
+        return <Coordination {...props} />;
+      case 'settings':
+        return (
+          <SettingsModule
+            {...props}
+            onExport={handleExport}
+            onImport={handleImport}
+            onReset={handleReset}
+          />
+        );
+      case 'help':
+        return <Help />;
+      default:
+        return <Dashboard {...props} />;
     }
   };
 
-  // Contar alertas HOLD
+  // Contar alertas HOLD pendientes
   const holdCount = state.holds.filter((h) => !h.resolved).length;
 
   return (
     <div className={`min-h-screen ${isDark ? 'dark' : ''}`}>
-      {/* Overlay para móvil */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/50 z-50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Barra lateral */}
-      <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-        <div className="p-4 border-b border-white/20">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg gradient-accent flex items-center justify-center">
-              <Music size={20} color="#1a3a5c" />
-            </div>
-            <div>
-              <h1 className="text-sm font-bold text-white leading-tight">Programa Didáctico</h1>
-              <p className="text-xs text-white/60">2026/2027 · Extremadura</p>
-            </div>
-          </div>
-        </div>
-
-        <nav className="py-2">
-          {modules.map((mod) => (
-            <div
-              key={mod.id}
-              className={`sidebar-item ${activeModule === mod.id ? 'active' : ''}`}
-              onClick={() => {
-                setActiveModule(mod.id);
-                setSidebarOpen(false);
-              }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  setActiveModule(mod.id);
-                  setSidebarOpen(false);
-                }
-              }}
-              aria-label={mod.label}
-            >
-              <mod.icon size={18} />
-              <span>{mod.label}</span>
-              {mod.id === 'dashboard' && holdCount > 0 && (
-                <span className="ml-auto badge badge-danger text-xs">{holdCount}</span>
-              )}
-            </div>
-          ))}
-        </nav>
-
-        <div className="p-4 border-t border-white/20 mt-auto">
-          <div className="flex items-center gap-2">
-            <Download size={14} className="text-white/60" />
-            <button
-              onClick={handleExport}
-              className="text-xs text-white/60 hover:text-white transition"
-            >
-              Exportar backup
-            </button>
-          </div>
-        </div>
-      </aside>
+      {/* Sidebar */}
+      <Sidebar
+        activeModule={activeModule}
+        setActiveModule={setActiveModule}
+        sidebarOpen={sidebarOpen}
+        setSidebarOpen={setSidebarOpen}
+        holdCount={holdCount}
+        onExport={handleExport}
+      />
 
       {/* Contenido principal */}
       <div className={`main-content ${sidebarOpen ? '' : 'expanded lg:ml-[260px]'}`}>
-        {/* Barra superior */}
-        <header className="topbar">
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition lg:hidden"
-              aria-label="Menú"
-            >
-              {sidebarOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
-            <div className="hidden md:block relative">
-              <Search size={16} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Buscar en el programa..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 pr-4 py-2 w-64 rounded-lg border border-gray-200 text-sm focus:outline-none focus:border-[var(--primary)] bg-[var(--bg)]"
-              />
-            </div>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {holdCount > 0 && (
-              <div className="flex items-center gap-1 px-2 py-1 rounded-lg bg-red-50 text-red-600 text-xs">
-                <AlertTriangle size={14} />
-                <span>{holdCount} HOLD</span>
-              </div>
-            )}
-            <button
-              onClick={toggleTheme}
-              className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-              aria-label="Cambiar tema"
-            >
-              {isDark ? <Sun size={18} /> : <Moon size={18} />}
-            </button>
-            <label className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer" title="Importar backup">
-              <Upload size={18} />
-              <input type="file" accept=".json" onChange={handleImport} className="hidden" />
-            </label>
-          </div>
-        </header>
+        {/* TopBar */}
+        <TopBar
+          isDark={isDark}
+          toggleTheme={toggleTheme}
+          sidebarOpen={sidebarOpen}
+          setSidebarOpen={setSidebarOpen}
+          searchQuery={searchQuery}
+          setSearchQuery={setSearchQuery}
+          holdCount={holdCount}
+          onImport={handleImport}
+        />
 
         {/* Contenido del módulo */}
-        <main className="p-4 md:p-6 lg:p-8 fade-in">
-          {renderModule()}
-        </main>
+        <main className="p-4 md:p-6 lg:p-8 fade-in">{renderModule()}</main>
       </div>
 
       {/* Toast de notificación */}
-      {toast && (
-        <div className={`toast toast-${toast.type}`}>
-          {toast.message}
-        </div>
-      )}
+      {toast && <div className={`toast toast-${toast.type}`}>{toast.message}</div>}
     </div>
   );
 }
