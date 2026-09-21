@@ -1,7 +1,6 @@
 // =====================================================
-// APP PRINCIPAL - Programa Didáctico 2026/2027
-// Estudios Profesionales de Música de Extremadura
-// Persistencia: IndexedDB (offline-first)
+// APP PRINCIPAL - Layout con Flexbox
+// Programa Didáctico 2026/2027
 // =====================================================
 
 import { useState, useEffect, useCallback } from 'react';
@@ -25,7 +24,6 @@ import SettingsModule from './modules/Settings';
 import Help from './modules/Help';
 
 function App() {
-  // Estado de la aplicación (carga asíncrona desde IndexedDB)
   const [state, setState] = useState<AppState | null>(null);
   const [activeModule, setActiveModule] = useState('dashboard');
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -34,7 +32,7 @@ function App() {
   const [isDark, setIsDark] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Cargar estado desde IndexedDB al montar (con datos semilla si es primera vez)
+  // Cargar estado desde IndexedDB
   useEffect(() => {
     const initApp = async () => {
       const loadedState = await loadState();
@@ -45,14 +43,14 @@ function App() {
     initApp();
   }, []);
 
-  // Persistir estado en IndexedDB cuando cambie
+  // Persistir estado en IndexedDB
   useEffect(() => {
     if (state) {
       saveState(state);
     }
   }, [state]);
 
-  // Aplicar tema oscuro al documento
+  // Aplicar tema oscuro
   useEffect(() => {
     if (isDark) {
       document.documentElement.classList.add('dark');
@@ -61,13 +59,22 @@ function App() {
     }
   }, [isDark]);
 
-  // Mostrar notificación toast
+  // Cerrar sidebar con ESC
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && sidebarOpen) {
+        setSidebarOpen(false);
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [sidebarOpen]);
+
   const showToast = useCallback((message: string, type: string = 'success') => {
     setToast({ message, type });
     setTimeout(() => setToast(null), 3000);
   }, []);
 
-  // Actualizar estado (merge parcial)
   const updateState = useCallback((updates: Partial<AppState>) => {
     setState((prev) => {
       if (!prev) return prev;
@@ -75,7 +82,6 @@ function App() {
     });
   }, []);
 
-  // Toggle tema claro/oscuro
   const toggleTheme = () => {
     const newTheme = !isDark ? 'dark' : 'light';
     setIsDark(!isDark);
@@ -84,7 +90,6 @@ function App() {
     }
   };
 
-  // Exportar backup JSON
   const handleExport = () => {
     if (state) {
       exportJSON(state);
@@ -92,7 +97,6 @@ function App() {
     }
   };
 
-  // Importar backup JSON
   const handleImport = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -106,7 +110,6 @@ function App() {
     e.target.value = '';
   };
 
-  // Resetear datos a valores iniciales
   const handleReset = async () => {
     if (confirm('¿Estás seguro? Se perderán todos los datos actuales.')) {
       const initial = await resetState();
@@ -115,7 +118,7 @@ function App() {
     }
   };
 
-  // Pantalla de carga mientras se inicializa IndexedDB
+  // Pantalla de carga
   if (isLoading || !state) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[var(--bg-alt)]">
@@ -128,32 +131,20 @@ function App() {
     );
   }
 
-  // Renderizar módulo activo
   const renderModule = () => {
     const props = { state, updateState, showToast };
     switch (activeModule) {
-      case 'dashboard':
-        return <Dashboard {...props} />;
-      case 'programme':
-        return <Programme {...props} />;
-      case 'students':
-        return <Students {...props} />;
-      case 'ensembles':
-        return <Ensembles {...props} />;
-      case 'criteria':
-        return <Criteria {...props} />;
-      case 'assessment':
-        return <Assessment {...props} />;
-      case 'coassessment':
-        return <CoAssessment {...props} />;
-      case 'grades':
-        return <Grades {...props} />;
-      case 'units':
-        return <Units {...props} />;
-      case 'annexes':
-        return <Annexes {...props} />;
-      case 'coordination':
-        return <Coordination {...props} />;
+      case 'dashboard': return <Dashboard {...props} />;
+      case 'programme': return <Programme {...props} />;
+      case 'students': return <Students {...props} />;
+      case 'ensembles': return <Ensembles {...props} />;
+      case 'criteria': return <Criteria {...props} />;
+      case 'assessment': return <Assessment {...props} />;
+      case 'coassessment': return <CoAssessment {...props} />;
+      case 'grades': return <Grades {...props} />;
+      case 'units': return <Units {...props} />;
+      case 'annexes': return <Annexes {...props} />;
+      case 'coordination': return <Coordination {...props} />;
       case 'settings':
         return (
           <SettingsModule
@@ -163,18 +154,15 @@ function App() {
             onReset={handleReset}
           />
         );
-      case 'help':
-        return <Help />;
-      default:
-        return <Dashboard {...props} />;
+      case 'help': return <Help />;
+      default: return <Dashboard {...props} />;
     }
   };
 
-  // Contar alertas HOLD pendientes
   const holdCount = state.holds.filter((h) => !h.resolved).length;
 
   return (
-    <div className={`min-h-screen ${isDark ? 'dark' : ''}`}>
+    <div className={`app-container ${isDark ? 'dark' : ''}`}>
       {/* Sidebar */}
       <Sidebar
         activeModule={activeModule}
@@ -185,8 +173,16 @@ function App() {
         onExport={handleExport}
       />
 
+      {/* Backdrop para móvil */}
+      {sidebarOpen && (
+        <div
+          className="sidebar-backdrop"
+          onClick={() => setSidebarOpen(false)}
+        />
+      )}
+
       {/* Contenido principal */}
-      <div className={`main-content ${sidebarOpen ? '' : 'expanded lg:ml-[260px]'}`}>
+      <div className="main-wrapper">
         {/* TopBar */}
         <TopBar
           isDark={isDark}
@@ -200,7 +196,9 @@ function App() {
         />
 
         {/* Contenido del módulo */}
-        <main className="p-4 md:p-6 lg:p-8 fade-in">{renderModule()}</main>
+        <main className="main-content">
+          {renderModule()}
+        </main>
       </div>
 
       {/* Toast de notificación */}
