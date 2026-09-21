@@ -1,261 +1,47 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 /* =====================================================
-   LAYOUT PRINCIPAL - Flexbox
-   Sidebar + Main Content sin overlap
-   ===================================================== */
-
-/* Reset global */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
-
-html, body, #root {
-  height: 100%;
-  overflow-x: hidden;
-}
-
-body {
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  font-size: 16px;
-  line-height: 1.6;
-  background-color: var(--bg-alt);
-  color: var(--text);
-}
-
-/* Contenedor principal con Flexbox */
-.app-container {
-  display: flex;
-  min-height: 100vh;
-  width: 100%;
-  position: relative;
-}
-
-/* =====================================================
-   SIDEBAR
-   ===================================================== */
-
-.sidebar {
-  width: 260px;
-  background: var(--primary);
-  color: white;
-  height: 100vh;
-  position: sticky;
-  top: 0;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
-  overflow-x: hidden;
-  z-index: 100;
-  transition: transform 0.3s ease;
-}
-
-/* Scrollbar personalizado para sidebar */
-.sidebar::-webkit-scrollbar {
-  width: 6px;
-}
-
-.sidebar::-webkit-scrollbar-track {
-  background: rgba(255, 255, 255, 0.1);
-}
-
-.sidebar::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.3);
-  border-radius: 3px;
-}
-
-.sidebar::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.5);
-}
-
-/* Items del menú */
-.sidebar-item {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 20px;
-  color: rgba(255, 255, 255, 0.85);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  font-size: 14px;
-  border-left: 4px solid transparent;
-  text-decoration: none;
-  user-select: none;
-}
-
-.sidebar-item:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
-}
-
-.sidebar-item.active {
-  background: rgba(255, 255, 255, 0.15);
-  color: white;
-  border-left-color: var(--accent);
-  font-weight: 500;
-}
-
-.sidebar-item svg {
-  flex-shrink: 0;
-}
-
-/* =====================================================
-   MAIN WRAPPER
-   ===================================================== */
-
-.main-wrapper {
-  flex: 1;
-  min-width: 0; /* CRÍTICO: evita overflow */
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-/* =====================================================
-   TOPBAR
-   ===================================================== */
-
-.topbar {
-  background: var(--bg-card, white);
-  border-bottom: 1px solid var(--border);
-  padding: 0 24px;
-  height: 64px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  position: sticky;
-  top: 0;
-  z-index: 90;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  flex-shrink: 0;
-}
-
-/* =====================================================
-   MAIN CONTENT
-   ===================================================== */
-
-.main-content {
-  flex: 1;
-  padding: 24px 32px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  min-width: 0;
-  width: 100%;
-}
-
-/* =====================================================
-   BACKDROP (móvil)
-   ===================================================== */
-
-.sidebar-backdrop {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.5);
-  z-index: 99;
-  backdrop-filter: blur(2px);
-}
-
-/* =====================================================
-   RESPONSIVE - Tablet (768px - 1023px)
-   ===================================================== */
-
-@media (max-width: 1023px) and (min-width: 768px) {
-  .sidebar {
-    width: 220px;
-  }
-  
-  .sidebar-item {
-    padding: 10px 16px;
-    font-size: 13px;
-  }
-  
-  .main-content {
-    padding: 20px 24px;
-  }
-}
-
-/* =====================================================
-   RESPONSIVE - Móvil (< 768px)
-   ===================================================== */
-
-@media (max-width: 767px) {
-  .sidebar {
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 280px;
-    transform: translateX(-100%);
-    z-index: 200;
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
-  }
-  
-  .sidebar.open {
-    transform: translateX(0);
-  }
-  
-  .sidebar-backdrop {
-    display: block;
-  }
-  
-  .topbar {
-    height: 56px;
-    padding: 0 16px;
-  }
-  
-  .main-content {
-    padding: 16px;
-  }
-}
-
-/* =====================================================
-   RESPONSIVE - Móvil pequeño (< 480px)
-   ===================================================== */
-
-@media (max-width: 479px) {
-  .sidebar {
-    width: 260px;
-  }
-  
-  .main-content {
-    padding: 12px;
-  }
-  
-  .topbar {
-    height: 52px;
-    padding: 0 12px;
-  }
-}
-
-/* =====================================================
-   VARIABLES DE COLOR
+   LAYOUT PRINCIPAL - Menú Superior
+   Programa Didáctico 2026/2027
    ===================================================== */
 
 :root {
+  /* Colores principales */
   --primary: #1a3a5c;
   --primary-light: #2c5f8a;
   --primary-dark: #0f2440;
   --accent: #c8a45c;
   --accent-light: #e0c47a;
+  
+  /* Fondos */
   --bg: #ffffff;
   --bg-alt: #f7f9fb;
   --bg-card: #ffffff;
+  
+  /* Bordes y texto */
   --border: #d8e0e8;
   --text: #1f2937;
   --text-light: #4b5563;
   --text-muted: #9ca3af;
+  
+  /* Estados */
   --success: #7ab87a;
   --warning: #e6c34d;
   --danger: #c85454;
   --info: #7a9ec8;
+  
+  /* Sombras */
   --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.07);
   --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+  
+  /* Bordes redondeados */
   --radius: 8px;
   --radius-lg: 12px;
+  
+  /* Transiciones */
   --transition: all 0.2s ease;
 }
 
@@ -275,43 +61,506 @@ body {
 }
 
 /* =====================================================
-   TIPOGRAFÍA
+   RESET Y BASE
    ===================================================== */
 
-h1, h2, h3, h4, h5, h6 {
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  font-weight: 600;
-  line-height: 1.3;
-  color: var(--primary);
-  overflow-wrap: break-word;
-  word-wrap: break-word;
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-p {
-  overflow-wrap: break-word;
-  word-wrap: break-word;
+html, body, #root {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 16px;
+  line-height: 1.6;
+  background-color: var(--bg-alt);
+  color: var(--text);
 }
 
 /* =====================================================
-   SCROLLBARS PERSONALIZADOS
+   APP CONTAINER
    ===================================================== */
 
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+.app-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
 }
 
-::-webkit-scrollbar-track {
+/* =====================================================
+   TOP NAVIGATION - Menú Superior
+   ===================================================== */
+
+.top-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.5rem;
+  height: 64px;
+  gap: 1rem;
+}
+
+/* Sección izquierda: Logo + Hamburguesa */
+.top-nav-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.mobile-menu-btn {
+  display: none;
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.mobile-menu-btn:hover {
   background: var(--bg-alt);
 }
 
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-  border-radius: 4px;
+.logo-section {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted);
+.logo-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logo-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.logo-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--primary);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.logo-subtitle {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+/* Sección central: Menú de navegación */
+.top-nav-center {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex: 1;
+  justify-content: center;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.top-nav-center::-webkit-scrollbar {
+  display: none;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius);
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  white-space: nowrap;
+  position: relative;
+}
+
+.nav-item:hover {
+  background: var(--bg-alt);
+  color: var(--primary);
+}
+
+.nav-item.active {
+  background: var(--primary);
+  color: white;
+}
+
+.nav-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  background: var(--danger);
+  color: white;
+  font-size: 0.625rem;
+  font-weight: 700;
+  padding: 0.125rem 0.375rem;
+  border-radius: 9999px;
+  min-width: 18px;
+  text-align: center;
+  line-height: 1;
+}
+
+/* Dropdown para más opciones */
+.nav-dropdown {
+  position: relative;
+}
+
+.nav-dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 0.5rem;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-lg);
+  min-width: 200px;
+  padding: 0.5rem;
+  display: none;
+  z-index: 110;
+}
+
+.nav-dropdown:hover .nav-dropdown-menu {
+  display: block;
+}
+
+.nav-dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  border-radius: var(--radius);
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: var(--transition);
+  width: 100%;
+  text-align: left;
+}
+
+.nav-dropdown-item:hover {
+  background: var(--bg-alt);
+  color: var(--primary);
+}
+
+.nav-dropdown-item.active {
+  background: var(--primary);
+  color: white;
+}
+
+/* Sección derecha: Acciones */
+.top-nav-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.search-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.search-icon {
+  position: absolute;
+  left: 0.75rem;
+  color: var(--text-muted);
+  pointer-events: none;
+}
+
+.search-input {
+  padding: 0.5rem 0.75rem 0.5rem 2.25rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.875rem;
+  width: 200px;
+  transition: var(--transition);
+}
+
+.search-input:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(26, 58, 92, 0.1);
+  width: 250px;
+}
+
+.hold-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.375rem 0.75rem;
+  border-radius: 9999px;
+  background: var(--danger);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  animation: pulse 2s infinite;
+}
+
+.hold-badge:hover {
+  background: #b91c1c;
+  transform: scale(1.05);
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+.icon-btn {
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  background: transparent;
+  border: none;
+  color: var(--text-light);
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-btn:hover {
+  background: var(--bg-alt);
+  color: var(--primary);
+}
+
+/* =====================================================
+   MENÚ MÓVIL
+   ===================================================== */
+
+.mobile-menu-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 90;
+  backdrop-filter: blur(2px);
+}
+
+.mobile-menu {
+  position: fixed;
+  top: 64px;
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border-bottom: 1px solid var(--border);
+  box-shadow: var(--shadow-lg);
+  z-index: 95;
+  max-height: calc(100vh - 64px);
+  overflow-y: auto;
+  animation: slideDown 0.3s ease;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.mobile-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.mobile-menu-header h2 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.mobile-menu-close {
+  padding: 0.5rem;
+  border-radius: var(--radius);
+  background: transparent;
+  border: none;
+  color: var(--text);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.mobile-menu-close:hover {
+  background: var(--bg-alt);
+}
+
+.mobile-menu-nav {
+  padding: 0.5rem;
+}
+
+.mobile-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.875rem 1rem;
+  border-radius: var(--radius);
+  background: transparent;
+  border: none;
+  color: var(--text);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: var(--transition);
+  width: 100%;
+  text-align: left;
+}
+
+.mobile-menu-item:hover {
+  background: var(--bg-alt);
+  color: var(--primary);
+}
+
+.mobile-menu-item.active {
+  background: var(--primary);
+  color: white;
+}
+
+.mobile-menu-badge {
+  margin-left: auto;
+  background: var(--danger);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.25rem 0.5rem;
+  border-radius: 9999px;
+  min-width: 24px;
+  text-align: center;
+}
+
+/* =====================================================
+   MAIN CONTENT
+   ===================================================== */
+
+.main-content {
+  flex: 1;
+  padding: 2rem;
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+/* =====================================================
+   RESPONSIVE - Tablet
+   ===================================================== */
+
+@media (max-width: 1024px) {
+  .top-nav {
+    padding: 0 1rem;
+  }
+  
+  .search-input {
+    width: 150px;
+  }
+  
+  .search-input:focus {
+    width: 180px;
+  }
+  
+  .main-content {
+    padding: 1.5rem;
+  }
+}
+
+/* =====================================================
+   RESPONSIVE - Móvil
+   ===================================================== */
+
+@media (max-width: 768px) {
+  .top-nav {
+    height: 56px;
+    padding: 0 1rem;
+  }
+  
+  .mobile-menu-btn {
+    display: flex;
+  }
+  
+  .top-nav-center {
+    display: none;
+  }
+  
+  .logo-text {
+    display: none;
+  }
+  
+  .search-box {
+    display: none;
+  }
+  
+  .main-content {
+    padding: 1rem;
+  }
+  
+  .mobile-menu {
+    top: 56px;
+    max-height: calc(100vh - 56px);
+  }
+}
+
+/* =====================================================
+   RESPONSIVE - Móvil pequeño
+   ===================================================== */
+
+@media (max-width: 480px) {
+  .top-nav {
+    padding: 0 0.75rem;
+  }
+  
+  .logo-icon {
+    width: 36px;
+    height: 36px;
+  }
+  
+  .main-content {
+    padding: 0.75rem;
+  }
 }
 
 /* =====================================================
@@ -598,12 +847,8 @@ img, video, svg {
    ===================================================== */
 
 @media print {
-  .sidebar, .topbar, .btn, .no-print, .sidebar-backdrop {
+  .top-nav, .btn, .no-print, .mobile-menu-backdrop, .mobile-menu {
     display: none !important;
-  }
-  
-  .main-wrapper {
-    margin-left: 0 !important;
   }
   
   .main-content {
