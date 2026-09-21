@@ -29,6 +29,7 @@ const modules = [
   { id: 'grades', label: 'Calificaciones', icon: BarChart3 },
   { id: 'units', label: 'Unidades Didácticas', icon: GraduationCap },
   { id: 'annexes', label: 'Anexos', icon: FileText },
+  { id: 'rubricCatalog', label: 'Catálogo de Rúbricas', icon: FileText },
   { id: 'coordination', label: 'Coordinación', icon: Users2 },
   { id: 'settings', label: 'Configuración', icon: Settings },
   { id: 'help', label: 'Ayuda', icon: HelpCircle },

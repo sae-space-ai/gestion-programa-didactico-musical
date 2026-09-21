@@ -19,6 +19,7 @@ import CoAssessment from './modules/CoAssessment';
 import Grades from './modules/Grades';
 import Units from './modules/Units';
 import Annexes from './modules/Annexes';
+import RubricCatalogPage from './annexes/rubricCatalog/RubricCatalogPage';
 import Coordination from './modules/Coordination';
 import SettingsModule from './modules/Settings';
 import Help from './modules/Help';
@@ -144,6 +145,7 @@ function App() {
       case 'grades': return <Grades {...props} />;
       case 'units': return <Units {...props} />;
       case 'annexes': return <Annexes {...props} />;
+      case 'rubricCatalog': return <RubricCatalogPage />;
       case 'coordination': return <Coordination {...props} />;
       case 'settings':
         return (

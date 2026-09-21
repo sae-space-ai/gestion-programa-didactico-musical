@@ -258,3 +258,59 @@ export interface Competence {
   description: string;
   type: 'musical' | 'interpretive' | 'personal' | 'autonomy' | 'digital';
 }
+
+// =====================================================
+// TIPOS PARA CATÁLOGO DE RÚBRICAS (Anexo)
+// =====================================================
+
+// RÚBRICA
+export interface Rubric {
+  id: string;
+  code: string;
+  title: string;
+  subject?: 'Camara' | 'Banda' | 'Orquesta' | 'All';
+  course?: 1 | 2 | 3 | 4 | 5 | 6 | 'All';
+  criterionCodes: string[];
+  competenceCodes: string[];
+  levels: {
+    initial: string;
+    developing: string;
+    adequate: string;
+    consolidated: string;
+  };
+  evidence: string[];
+  instruments: string[];
+  weight?: number;
+}
+
+// CADENA DE TRAZABILIDAD
+export interface TraceabilityChain {
+  id: string;
+  contentId: string;
+  contentTitle: string;
+  objectiveId: string;
+  objectiveTitle: string;
+  criterionCode: string;
+  criterionTitle: string;
+  competenceCode: string;
+  competenceTitle: string;
+  activityId: string;
+  activityTitle: string;
+  evidenceId: string;
+  evidenceTitle: string;
+  instrumentId: string;
+  instrumentTitle: string;
+  achievementLevel: 1 | 2 | 3 | 4;
+  unitCode: string;
+  course: number;
+  subject: 'Camara' | 'Banda' | 'Orquesta';
+}
+
+// FILTROS DEL CATÁLOGO
+export interface RubricCatalogFilters {
+  subject: 'All' | 'Camara' | 'Banda' | 'Orquesta';
+  course: 'All' | 1 | 2 | 3 | 4 | 5 | 6;
+  criterion: 'All' | string;
+  competence: 'All' | string;
+  search: string;
+}
